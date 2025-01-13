@@ -9,4 +9,7 @@ suitcase = {
 # How can we delete:
 
 # 1. 1 pair of socks (so change the value from 4 to 3)
+suitcase["socks"] -= 1
 # 2. All of our jackets
+suitcase.delete("jackets")
+# or suitcase["jackets"] = 0, depending on what you want

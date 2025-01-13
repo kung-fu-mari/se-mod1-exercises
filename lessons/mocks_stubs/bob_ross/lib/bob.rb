@@ -15,7 +15,6 @@ class Bob
     end
   end
 
-
   def total_paint_amount
     total = 0
     @paints.each do |paint|

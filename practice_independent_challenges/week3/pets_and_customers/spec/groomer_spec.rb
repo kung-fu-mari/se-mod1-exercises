@@ -1,54 +1,107 @@
-require './lib/groomer'
-require './lib/customer'
 require './lib/pet'
+require './lib/customer'
+require './lib/groomer'
 
 RSpec.describe Groomer do
-  before(:each) do
-    @groomer = Groomer.new("The Hair Ball")
-  end
-
-  describe "Object" do
-    it "exists" do
-      expect(@groomer).to be_instance_of(Groomer)
+    it 'has a unique name' do
+        groomer = Groomer.new('Chez Pup')
+        expect(groomer.name).to eq('Chez Pup')
     end
 
-    it "has a name" do
-      expect(@groomer.name).to eq("The Hair Ball")
+    it 'can have customers with pets' do
+        groomer = Groomer.new('Chez Pup')
+        expect(groomer.customers).to eq([])
+
+        john = Customer.new("John", 0)
+        jesse= Customer.new("Jesse", 48)
+        doug = Customer.new("Doug", 85)
+
+        samson = Pet.new({name: "Samson", type: :dog, age: 3})
+        lucy = Pet.new({name: "Lucy", type: :cat, age: 12}) 
+        eric = Pet.new({name: "Eric", type: :fruit_bat, age: 5})
+        ericc = Pet.new({name: "Ericc", type: :dog, age: 2})
+        
+        john.adopt(samson)
+        john.adopt(lucy)
+        jesse.adopt(eric)
+        doug.adopt(ericc)
+
+        groomer.add_customer(john)
+        groomer.add_customer(jesse)
+        groomer.add_customer(doug)
+
+        expect(groomer.customers).to eq([john, jesse, doug])
+        expect(groomer.customers[1].pets[0]).to eq(eric)
     end
 
-    it "starts with no customers" do
-      expect(@groomer.customers).to eq([])
-    end
-  end
+    it 'can find all customers with outstanding balances' do
+        groomer = Groomer.new('Chez Pup')
 
-  describe "Integrating with Customers" do
-    before(:each) do
-      @joel = Customer.new("Joel", 2)
-      @billy = Customer.new("Billy", 3)
-      @samson = Pet.new({name: "Samson", type: :dog})
-      @lucy = Pet.new({name: "Lucy", type: :cat})
-      @molly = Pet.new({name: "Molly", type: :cat})
-    end
-    it "can add customers" do
-      @groomer.add_customer(@joel)
-      @groomer.add_customer(@billy)
-      expect(@groomer.customers).to eq([@joel, @billy])
+        john = Customer.new("John", 0)
+        jesse= Customer.new("Jesse", 48)
+        doug = Customer.new("Doug", 85)
+        groomer.add_customer(john)
+        groomer.add_customer(jesse)
+        groomer.add_customer(doug)
+
+        john.charge(28)
+        jesse.charge(83)
+        expect(groomer.find_customers_with_debt).to eq([john, jesse])
     end
 
-    it "can count the number of pets of a certain type" do
-      @joel.adopt(@samson)
-      @joel.adopt(@lucy)
-      @billy.adopt(@molly)
-      @groomer.add_customer(@joel)
-      @groomer.add_customer(@billy)
-      expect(@groomer.number_of_pets(:cat)).to eq(2)
+    it 'can count pets by type' do
+        groomer = Groomer.new('Chez Pup')
+
+        john = Customer.new("John", 0)
+        jesse= Customer.new("Jesse", 48)
+        doug = Customer.new("Doug", 85)
+
+        samson = Pet.new({name: "Samson", type: :dog, age: 3})
+        lucy = Pet.new({name: "Lucy", type: :cat, age: 12}) 
+        eric = Pet.new({name: "Eric", type: :fruit_bat, age: 5})
+        ericc = Pet.new({name: "Ericc", type: :dog, age: 2})
+        
+        john.adopt(samson)
+        john.adopt(lucy)
+        jesse.adopt(eric)
+        doug.adopt(ericc)
+
+        groomer.add_customer(john)
+        groomer.add_customer(jesse)
+        groomer.add_customer(doug)
+
+        expect(groomer.count_pets(:dog)).to eq(2)
+        expect(groomer.count_pets(:fruit_bat)).to eq(1)
+        expect(groomer.count_pets(:narwhal)).to eq(0)
     end
 
-    it "can list customers with outstanding balances" do
-      @joel.charge(10)
-      @groomer.add_customer(@joel)
-      @groomer.add_customer(@billy)
-      expect(@groomer.customers_with_oustanding_balances).to eq([@joel])
+    it 'keeps track of customer charges' do
+        groomer = Groomer.new('Chez Pup')
+
+        john = Customer.new("John", 0)
+        jesse= Customer.new("Jesse", 48)
+        doug = Customer.new("Doug", 85)
+
+        samson = Pet.new({name: "Samson", type: :dog, age: 3})
+        lucy = Pet.new({name: "Lucy", type: :cat, age: 12}) 
+        eric = Pet.new({name: "Eric", type: :fruit_bat, age: 5})
+        ericc = Pet.new({name: "Ericc", type: :dog, age: 2})
+        
+        john.adopt(samson)
+        john.adopt(lucy)
+        jesse.adopt(eric)
+        doug.adopt(ericc)
+
+        groomer.add_customer(john)
+        groomer.add_customer(jesse)
+        groomer.add_customer(doug)
+
+        groomer.charge_customer(john, :wash, john.pets[0])
+        groomer.charge_customer(john, :haircut, john.pets[1])
+        groomer.charge_customer(doug, :wash, doug.pets[0])
+
+        expect(groomer.charges).to eq([[:wash, 15, john, john.pets[0]],
+                                    [:haircut, 10, john, john.pets[1]],
+                                    [:wash, 15, doug, doug.pets[0]]])
     end
-  end
 end
